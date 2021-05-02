@@ -1,4 +1,4 @@
-package com.example.categora
+package com.leemeodev.categora
 
 import io.flutter.embedding.android.FlutterActivity
 

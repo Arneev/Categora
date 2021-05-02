@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.categora">
+    package="com.leemeodev.categora">
    <application
         android:label="categora"
         android:icon="@mipmap/ic_launcher">
