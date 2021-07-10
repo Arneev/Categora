@@ -1,0 +1,55 @@
+==============
+Add Category
+============
+
+Input Category Name
+ 
+	-PopUp Box 
+
+	- Within View Category
+
+==============
+View Category
+==============
+
+All the categories first sorted alphabetically
+
+Then sorted alphabetically or by last accessed or most accessed
+
+	- Hold on Category to rename or delete it
+
+	- Tap on Category to access it's items - View Items
+
+==============
+View Items
+==============
+
+Shows all the items 
+
+	- Can be sorted by either color, due date or alphabetically
+
+	- Tap on item to cross it out or uncross it
+
+	- Hold on item to access more options, either rename, change color or change due date
+
+		- New page or just PopUp Box? 
+		  => PopUp Box
+
+
+==============
+Settings
+==============
+
+Shows all the users details, 
+
+Change Password
+
+Delete Account
+
+==============
+Tasks
+==============
+
+Shows tasks sorted by due date only, closets to furthest 
+
+	- Hold on item does same affect as in View Items

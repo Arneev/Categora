@@ -1,0 +1,36 @@
+Navigation Bar
+===============
+
+View Categories
+
+Add Categories
+
+	We ask ourselves the question, do we combined the view categories and add categories with an option to add another category
+	OR do we keep them seperate, 
+
+	Assuming sepeartion,
+
+		Pros:
+			- Clean Look
+			- De-coupling functionality from UI, cleaner code
+
+		Cons:
+			- An extra page to go to 
+
+	Only one field which is the category name for the adding of a category, 
+	this seems like too much just for adding a category, 
+
+	Even with the cleaner look and de-coupling, it makes more sense to have
+	the create category button in the view Categories.
+
+Tasks
+
+	Shows the list of tasks to do based off the closest and furthest due dates.
+
+	Tasks with no due dates go at the end
+
+Settings (w/ Profile)
+	- Delete Account
+	- Change Password
+	- Shows them their details
+	
