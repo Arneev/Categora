@@ -6,6 +6,7 @@ import 'package:categora/helpers/toast.dart';
 import 'package:categora/style.dart';
 import 'package:categora/ui/items/widgets/itemWidget.dart';
 import 'package:categora/ui/widgets/addCircle.dart';
+import 'package:categora/ui/widgets/dropdown.dart';
 import 'package:categora/ui/widgets/heading.dart';
 import 'package:categora/ui/widgets/middleMessage.dart';
 import 'package:categora/ui/widgets/navBar.dart';
@@ -38,14 +39,15 @@ class _ItemsViewState extends State<ItemsView> {
         model.listenToItemsByCategory(
             categoryDocumentID: this.widget.category.documentID);
       },
-      // onDispose: ()=>,
       builder: (
         BuildContext context,
         ItemsViewModel model,
         _,
       ) {
+        final size = MediaQuery.of(context).size;
         return MyScaffold(
           navBar: MyNavBar(),
+          isScrollView: true,
           body: Column(
             children: [
               MySpacing(),
@@ -55,28 +57,50 @@ class _ItemsViewState extends State<ItemsView> {
                 children: [
                   Heading(this.widget.category.name),
                   MySpacing(height: 5),
-                  _AddItem(model: model, category: this.widget.category),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      _AddItem(model: model, category: this.widget.category),
+                      MyDropDown(
+                        onChanged: (newOption) {
+                          setState(() {
+                            model.setFilterChoice(newOption);
+                            model.sortItems();
+                          });
+                        },
+                        hint: "Sort By",
+                        list: model.itemFilterOptions,
+                        startingValue: model.filterChosen,
+                      ),
+                    ],
+                  ),
                 ],
               ),
               MySpacing(),
-              (ItemsViewModel.items.length == 0)
-                  ? MiddleMessage(message: "No Items...")
+              (model.items.length == 0)
+                  ? Container(
+                      height: size.width * 0.5,
+                      child: Center(
+                        child: MiddleMessage(message: "No Items..."),
+                      ),
+                    )
                   : ListView.builder(
+                      physics: NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
-                      itemCount: ItemsViewModel.items.length,
+                      itemCount: model.items.length,
                       itemBuilder: (BuildContext context, int index) {
                         return Column(
                           children: [
                             ItemWidget(
                               model: model,
-                              itemDocumentID:
-                                  ItemsViewModel.items[index].documentID,
+                              itemDocumentID: model.items[index].documentID,
                             ),
                             MySpacing(height: 15),
                           ],
                         );
                       },
-                    )
+                    ),
             ],
           ),
         );

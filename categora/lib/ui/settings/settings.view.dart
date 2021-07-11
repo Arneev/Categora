@@ -1,4 +1,6 @@
+import 'package:categora/style.dart';
 import 'package:categora/ui/settings/settings.viewmodel.dart';
+import 'package:categora/ui/widgets/button.dart';
 import 'package:categora/ui/widgets/heading.dart';
 import 'package:categora/ui/widgets/navBar.dart';
 import 'package:categora/ui/widgets/scaffold.dart';
@@ -17,13 +19,30 @@ class SettingsView extends StatelessWidget {
         SettingsViewModel model,
         _,
       ) {
+        final size = MediaQuery.of(context).size;
         return MyScaffold(
           navBar: MyNavBar(),
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Heading("Settings"),
-            ],
+          body: Container(
+            width: size.width,
+            height: size.height,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Heading("Settings"),
+                MyButton(
+                    text: "Reset Password",
+                    onTap: () => model.resetPassword(context: context)),
+                MyButton(
+                    text: "Log Out",
+                    onTap: () => model.logOut(context: context)),
+                MyButton(
+                  text: "Delete Account",
+                  onTap: () => model.deleteAccount(context: context),
+                  backgroundColor: Colors.black54,
+                  fontColor: brightRed,
+                )
+              ],
+            ),
           ),
         );
       },

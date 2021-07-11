@@ -1,6 +1,7 @@
 import 'package:categora/helpers/helper.dart';
 import 'package:categora/helpers/log.dart';
 import 'package:categora/helpers/toast.dart';
+import 'package:categora/services/Firestore.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -80,6 +81,19 @@ class Database implements Firebase {
     }
 
     return false;
+  }
+
+  static void resetPassword() {
+    _auth.sendPasswordResetEmail(email: user!.email!);
+  }
+
+  static void logOut() {
+    _auth.signOut();
+  }
+
+  static void deleteAccount() {
+    FirestoreService.deleteUserData();
+    user!.delete();
   }
 }
 

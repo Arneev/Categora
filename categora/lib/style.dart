@@ -27,11 +27,12 @@ const Color textColor = darkNavyBlue;
 const Color backgroundColor = darkNavyBlue;
 
 //Item Colors
-const Color itemColWhite = Colors.white12;
+final Color itemColMedium = Colors.orange[400]!;
 
-final Color itemColGreen = Colors.green[300]!.withAlpha(128);
+// final Color itemColLow = Colors.yellow[600]!.withAlpha(213);
+final Color itemColLow = Colors.green[400]!;
 
-final Color itemColYellow = Colors.yellow[200]!.withAlpha(128);
+final Color itemColHigh = Colors.red[400]!;
 
 //Standards
 final BorderRadius borderRadius = BorderRadius.circular(150);

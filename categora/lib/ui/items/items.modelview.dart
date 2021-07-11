@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:categora/classes/category.class.dart';
 import 'package:categora/classes/item.class.dart';
 import 'package:categora/helpers/enums.dart';
+import 'package:categora/helpers/log.dart';
 import 'package:categora/helpers/toast.dart';
 import 'package:categora/services/Firestore.dart';
 import 'package:categora/ui/widgets/alertDialog.dart';
 import 'package:categora/ui/widgets/button.dart';
 import 'package:categora/ui/widgets/middleMessage.dart';
 import 'package:categora/ui/widgets/textfield.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
@@ -18,8 +20,8 @@ import 'package:stacked/stacked.dart';
 import '../../style.dart';
 
 class ItemsViewModel extends BaseViewModel {
-  static List<Item> items = [];
-  static late Category _category;
+  List<Item> items = [];
+  late Category _category;
   late final StreamController<List<Item>> _itemController;
 
   void setController(StreamController<List<Item>> itemController) {
@@ -36,6 +38,7 @@ class ItemsViewModel extends BaseViewModel {
     )
         .listen((itemsStream) {
       items = itemsStream;
+      sortItems();
       notifyListeners();
 
       setBusy(false);
@@ -53,28 +56,27 @@ class ItemsViewModel extends BaseViewModel {
     generalPopUp(
       context: context,
       category: _category,
+      controllerText: item.name,
       heading: "Change Item",
       dueDateText: "Change Date",
       confirmButtonText: "Change",
       startIndex: ItemColor.values.indexOf(item.color),
-      extraWidget: Column(
-        children: [
-          // MySpacing(height: 5),
-          MyButton(
-            padding: 10.0,
-            fontSize: fontSizeMedium * 0.8,
-            text: "Delete",
-            onTap: () => _deleteItem(context: context, item: item),
-            backgroundColor: Colors.black38,
-            fontColor: brightRed,
-          ),
-        ],
+      startDate: DateTime.fromMicrosecondsSinceEpoch(
+          item.dueDate.microsecondsSinceEpoch),
+      extraWidget: MyButton(
+        padding: 10.0,
+        fontSize: fontSizeMedium * 0.8,
+        text: "Delete",
+        onTap: () => _deleteItem(context: context, item: item),
+        backgroundColor: Colors.black38,
+        fontColor: brightRed,
       ),
-      onConfirm: (
-          {required TextEditingController itemController,
-          required DateTime? dueDate,
-          required List<ItemColor> itemColors,
-          required int selectedIndex}) {
+      onConfirm: ({
+        required TextEditingController itemController,
+        required DateTime? dueDate,
+        required List<ItemColor> itemColors,
+        required int selectedIndex,
+      }) {
         final String name = itemController.text.trim();
         if (name.length == 0) {
           Fluttertoast.showToast(msg: "Cannot have empty item");
@@ -83,7 +85,9 @@ class ItemsViewModel extends BaseViewModel {
 
         _changeItem(
           name: name,
-          dueDate: (dueDate) ?? DateTime(2500),
+          dueDate: (dueDate != null)
+              ? Timestamp.fromDate(dueDate)
+              : Timestamp.fromDate(DateTime(2500)),
           status: ItemStatus.InProgress,
           color: itemColors[selectedIndex],
           item: item,
@@ -105,6 +109,7 @@ class ItemsViewModel extends BaseViewModel {
       heading: "Add Item",
       dueDateText: "Add Date",
       confirmButtonText: "Add",
+      startDate: DateTime.now(),
       onConfirm: (
           {required TextEditingController itemController,
           required DateTime? dueDate,
@@ -118,7 +123,9 @@ class ItemsViewModel extends BaseViewModel {
 
         _addItem(
           name: name,
-          dueDate: (dueDate) ?? DateTime(2500),
+          dueDate: (dueDate != null)
+              ? Timestamp.fromDate(dueDate)
+              : Timestamp.fromDate(DateTime(2500)),
           status: ItemStatus.InProgress,
           color: itemColors[selectedIndex],
         );
@@ -134,11 +141,13 @@ class ItemsViewModel extends BaseViewModel {
     required String dueDateText,
     required String confirmButtonText,
     required Function onConfirm,
+    String controllerText = "",
     int startIndex = 1,
+    required DateTime startDate,
     Widget? extraWidget,
   }) {
     final TextEditingController itemController =
-        TextEditingController(text: "");
+        TextEditingController(text: controllerText);
     int selectedIndex = startIndex;
     // ignore: avoid_init_to_null
     DateTime? dueDate = null;
@@ -209,6 +218,7 @@ class ItemsViewModel extends BaseViewModel {
               _dateTimePicker(
                 context: context,
                 onConfirm: (dateTime) => dueDate = dateTime,
+                startDate: startDate,
               );
             },
           ),
@@ -248,7 +258,7 @@ class ItemsViewModel extends BaseViewModel {
 
   void _addItem({
     required String name,
-    required DateTime dueDate,
+    required Timestamp dueDate,
     required ItemStatus status,
     required ItemColor color,
   }) {
@@ -258,14 +268,15 @@ class ItemsViewModel extends BaseViewModel {
       status: status,
       color: color,
       categoryDocId: _category.documentID,
-    );
-
-    notifyListeners();
+    ).then((_) {
+      sortItems();
+      notifyListeners();
+    });
   }
 
   void _changeItem({
     required String name,
-    required DateTime dueDate,
+    required Timestamp dueDate,
     required ItemStatus status,
     required ItemColor color,
     required Item item,
@@ -277,19 +288,47 @@ class ItemsViewModel extends BaseViewModel {
       color: color,
       categoryDocId: _category.documentID,
       itemDocId: item.documentID,
-    );
-
-    notifyListeners();
+    ).then((_) {
+      sortItems();
+      notifyListeners();
+    });
   }
 
   void _deleteItem({required BuildContext context, required Item item}) {
+    if (items.length == 1) {
+      if (items[0].documentID == item.documentID) {
+        items.clear();
+      }
+    }
+
     FirestoreService.deleteItem(item);
+    sortItems();
     notifyListeners();
     Navigator.pop(context);
   }
 
   void setCategory(Category category) {
     _category = category;
+  }
+
+  //Item Drop Down
+  String filterChosen = 'Due Date';
+  List<String> itemFilterOptions = ["Due Date", "Priority"];
+
+  void setFilterChoice(String newOption) {
+    filterChosen = newOption;
+  }
+
+  void sortItems() {
+    if (filterChosen == "Due Date") {
+      items = Item.sortByDueDate(items);
+      notifyListeners();
+    } else if (filterChosen == "Priority") {
+      items = Item.sortByPriority(items);
+      notifyListeners();
+    } else {
+      log.w("Failed to choose to sortItems");
+    }
   }
 }
 
@@ -332,7 +371,7 @@ class __ItemColorPickerState extends State<_ItemColorPicker> {
               ? Item.getColorByItemColor(this.widget.itemColor)
               : darkNavyBlue,
           borderRadius: borderRadius,
-          border: Border.all(width: 1.0, color: brightRed.withAlpha(128)),
+          border: Border.all(width: 1.0, color: Colors.white.withAlpha(128)),
         ),
         child: Text(
           Item.getPriority(this.widget.itemColor),
@@ -341,11 +380,7 @@ class __ItemColorPickerState extends State<_ItemColorPicker> {
           style: TextStyle(
             fontFamily: fontMont,
             fontSize: fontSizeSmall,
-            color: (isSelected)
-                ? ((this.widget.itemColor == ItemColor.Yellow)
-                    ? Colors.white
-                    : mustard)
-                : mustard,
+            color: Colors.white,
           ),
         ),
       ),
@@ -353,12 +388,20 @@ class __ItemColorPickerState extends State<_ItemColorPicker> {
   }
 }
 
-Future<DateTime?> _dateTimePicker(
-    {required BuildContext context,
-    required Function(DateTime) onConfirm}) async {
+Future<DateTime?> _dateTimePicker({
+  required BuildContext context,
+  required Function(DateTime) onConfirm,
+  required DateTime startDate,
+}) async {
+  if (Timestamp.fromDate(startDate).millisecondsSinceEpoch -
+          Timestamp.fromDate(DateTime(2400)).millisecondsSinceEpoch >
+      0) {
+    startDate = DateTime.now();
+  }
+
   return await DatePicker.showDateTimePicker(
     context,
-    currentTime: DateTime.now(),
+    currentTime: startDate,
     locale: LocaleType.en,
     minTime: DateTime.now(),
     maxTime: DateTime(2499),

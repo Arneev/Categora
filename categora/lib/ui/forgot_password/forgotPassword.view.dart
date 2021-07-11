@@ -14,22 +14,28 @@ class ForgotPasswordView extends StatelessWidget {
     return ViewModelBuilder.nonReactive(
         viewModelBuilder: () => ForgotPasswordViewModel(),
         builder: (BuildContext context, ForgotPasswordViewModel model, _) {
+          final size = MediaQuery.of(context).size;
           return MyScaffold(
-            body: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Heading("Forgot Password"),
-                MyTextField(
-                    controller: model.emailController, hintText: "e-mail"),
-                MyButton(
-                  text: "Submit",
-                  onTap: () async => await model.onForgotPassword(context),
-                ),
-                TextTap(
-                  text: "Login",
-                  onTap: () => model.goToLoginPage(context),
-                )
-              ],
+            isScrollView: false,
+            body: Container(
+              width: size.width,
+              height: size.height,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Heading("Forgot Password"),
+                  MyTextField(
+                      controller: model.emailController, hintText: "e-mail"),
+                  MyButton(
+                    text: "Submit",
+                    onTap: () async => await model.onForgotPassword(context),
+                  ),
+                  TextTap(
+                    text: "Login",
+                    onTap: () => model.goToLoginPage(context),
+                  )
+                ],
+              ),
             ),
           );
         });

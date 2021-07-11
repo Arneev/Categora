@@ -5,8 +5,9 @@ import '../../style.dart';
 class MyScaffold extends StatelessWidget {
   final Widget body;
   Widget? navBar;
+  bool isScrollView;
 
-  MyScaffold({required this.body, this.navBar});
+  MyScaffold({required this.body, this.navBar, this.isScrollView = true});
 
   @override
   Widget build(BuildContext context) {
@@ -15,11 +16,12 @@ class MyScaffold extends StatelessWidget {
       resizeToAvoidBottomInset: false,
       drawer: navBar,
       body: SafeArea(
-        child: SingleChildScrollView(
-          physics: BouncingScrollPhysics(),
-          child: body,
-        ),
-      ),
+          child: (isScrollView)
+              ? SingleChildScrollView(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  child: body,
+                )
+              : body),
     );
   }
 }

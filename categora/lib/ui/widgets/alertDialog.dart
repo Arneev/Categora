@@ -10,6 +10,7 @@ AlertDialog myAlertDialog({
   required List<Widget> content,
   required List<Widget> buttons,
   Widget? extraWidget,
+  double fontScale = 1.3,
 }) {
   return AlertDialog(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
@@ -26,7 +27,7 @@ AlertDialog myAlertDialog({
                   MyText(
                       text: title,
                       color: mustard,
-                      fontSize: fontSizeSmall * 1.3),
+                      fontSize: fontSizeSmall * fontScale),
                   extraWidget,
                 ],
               ),

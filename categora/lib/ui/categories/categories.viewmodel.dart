@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:categora/classes/item.class.dart';
 import 'package:categora/helpers/enums.dart';
+import 'package:categora/helpers/log.dart';
 import 'package:categora/services/Database.dart';
 import 'package:categora/services/Firestore.dart';
 import 'package:categora/style.dart';
@@ -18,12 +21,40 @@ class CategoriesViewModel extends BaseViewModel {
   //Variables
   static List<Category> categories = [];
 
+  static List<String> categoryFilterOptions = [
+    "Last Accessed",
+    "Alphabetically",
+    "Most Accessed"
+  ];
+
+  static String filterChosen = categoryFilterOptions[0];
+
+  void setFilterChosen({required String newOption}) {
+    filterChosen = newOption;
+  }
+
+  void sortAll() {
+    if (filterChosen == "Last Accessed") {
+      categories = Category.sortByLastAccessed(categories);
+      notifyListeners();
+    } else if (filterChosen == "Alphabetically") {
+      categories = Category.sortAlphabetically(categories);
+      notifyListeners();
+    } else if (filterChosen == "Most Accessed") {
+      categories = Category.sortByNumbAccessed(categories);
+      notifyListeners();
+    } else {
+      log.w("Invalid Filter Options, $filterChosen");
+    }
+  }
+
   //Listen to Category Updates in Firestore
   void listenToCategories() {
     setBusy(true);
 
     FirestoreService.listenToCategoriesRealTime().listen((categoriesData) {
       categories = categoriesData;
+      sortAll();
       notifyListeners();
 
       setBusy(false);
@@ -36,7 +67,42 @@ class CategoriesViewModel extends BaseViewModel {
   }
 
   void updateCategory(BuildContext context, Category category) {
-    toast("I update category");
+    TextEditingController categoryController =
+        TextEditingController(text: category.name);
+
+    AlertDialog alertDialog = myAlertDialog(
+      title: "Change Category",
+      fontScale: 1.0,
+      extraWidget: MyButton(
+        padding: 10.0,
+        fontSize: fontSizeMedium * 0.8,
+        text: "Delete",
+        onTap: () => _deleteCategory(context: context, category: category),
+        backgroundColor: Colors.black38,
+        fontColor: brightRed,
+      ),
+      content: [
+        MyTextField(controller: categoryController, hintText: "Category Name"),
+      ],
+      buttons: [
+        MyAlertButton(
+          text: "Change",
+          onTap: () => _updateCategory(
+            categoryName: categoryController.text.trim(),
+            category: category,
+            context: context,
+          ),
+        ),
+        MyAlertButton(text: "Cancel", onTap: () => Navigator.pop(context)),
+      ],
+    );
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alertDialog;
+      },
+    );
   }
 
   //Add Category
@@ -60,7 +126,6 @@ class CategoriesViewModel extends BaseViewModel {
         MyAlertButton(
           text: "Add",
           onTap: () {
-            toast("WE add");
             _addCategory(
               context: context,
               categoryName: categoryController.text.trim(),
@@ -85,13 +150,46 @@ class CategoriesViewModel extends BaseViewModel {
 
   void _addCategory(
       {required String categoryName, required BuildContext context}) async {
-    toast("tf");
     if (categoryName.length == 0) {
       toast("Cannot add empty category");
       return;
     }
 
-    FirestoreService.addCategory(categoryName);
+    FirestoreService.addCategory(categoryName).then((_) {
+      sortAll();
+      notifyListeners();
+    });
+
+    Navigator.pop(context);
+  }
+
+  void _deleteCategory(
+      {required BuildContext context, required Category category}) {
+    if (categories.length == 1) {
+      if (categories[0].documentID == category.documentID) {
+        categories.clear();
+      }
+    }
+
+    FirestoreService.deleteCategory(categoryDocId: category.documentID)
+        .then((_) {
+      sortAll();
+      notifyListeners();
+    });
+
+    Navigator.pop(context);
+  }
+
+  void _updateCategory(
+      {required String categoryName,
+      required Category category,
+      required BuildContext context}) {
+    FirestoreService.updateCategory(
+            newCategoryName: categoryName, category: category)
+        .then((_) {
+      sortAll();
+      notifyListeners();
+    });
 
     Navigator.pop(context);
   }

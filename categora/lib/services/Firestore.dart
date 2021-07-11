@@ -48,22 +48,55 @@ class FirestoreService {
           categories.add(category);
         }
         _categoryController.add(categories);
+      } else {
+        _categoryController.stream.drain();
       }
     });
 
     return _categoryController.stream;
   }
 
+  static Future<List<Item>> getAllItems() async {
+    final categorySnapshots = (await categoriesCollectionReference
+            .where("userID", isEqualTo: Database.user!.uid)
+            .get())
+        .docs;
+
+    List<Item> items = [];
+    for (var categorySnapshot in categorySnapshots) {
+      final categoryDocId = categorySnapshot.id;
+
+      final itemSnapshots = await categoriesCollectionReference
+          .doc(categoryDocId)
+          .collection("items")
+          .get();
+
+      if (itemSnapshots.size != 0) {
+        for (var itemDoc in itemSnapshots.docs) {
+          items.add(
+            Item.fromMap(
+              map: itemDoc.data(),
+              documentID: itemDoc.id,
+              categoryDocumentId: categoryDocId,
+            ),
+          );
+        }
+      }
+    }
+
+    return items;
+  }
+
   //Add Category
-  static void addCategory(String categoryName) {
+  static Future<void> addCategory(String categoryName) async {
     Map<String, dynamic> map = {
       "name": categoryName,
-      "lastAccessed": DateTime.now(),
+      "lastAccessed": Timestamp.now(),
       "numbAccessed": 1,
       "userID": Database.user!.uid,
     };
 
-    categoriesCollectionReference.add(map);
+    await categoriesCollectionReference.add(map);
   }
 
   ///[Items]
@@ -92,37 +125,39 @@ class FirestoreService {
         }
         // toast(items[0]);
         itemController.add(items);
+      } else {
+        itemController.stream.drain();
       }
     });
 
     return itemController.stream;
   }
 
-  void changeStatusItem({required Item item}) {
+  Future<void> changeStatusItem({required Item item}) async {
     item.status = (item.status == ItemStatus.Done)
         ? ItemStatus.InProgress
         : ItemStatus.Done;
 
     try {
-      categoriesCollectionReference
+      await categoriesCollectionReference
           .doc(item.categoryDocumentID)
           .collection("items")
           .doc(item.documentID)
           .update(item.toMap());
     } on PlatformException catch (e) {
-      toast(e.message);
+      log.e(e.message);
     } catch (e) {
-      toast(e.toString());
+      log.e(e.toString());
     }
   }
 
-  static void addItemToCategory({
+  static Future<void> addItemToCategory({
     required String name,
-    required DateTime dueDate,
+    required Timestamp dueDate,
     required ItemStatus status,
     required ItemColor color,
     required String categoryDocId,
-  }) {
+  }) async {
     final Map<String, dynamic> map = <String, dynamic>{
       "color": EnumToString.convertToString(color),
       "status": EnumToString.convertToString(status),
@@ -130,20 +165,20 @@ class FirestoreService {
       "dueDate": dueDate,
     };
 
-    categoriesCollectionReference
+    await categoriesCollectionReference
         .doc(categoryDocId)
         .collection("items")
         .add(map);
   }
 
-  static void changeItemFromCategory({
+  static Future<void> changeItemFromCategory({
     required String name,
-    required DateTime dueDate,
+    required Timestamp dueDate,
     required ItemStatus status,
     required ItemColor color,
     required String categoryDocId,
     required String itemDocId,
-  }) {
+  }) async {
     final Map<String, dynamic> map = <String, dynamic>{
       "color": EnumToString.convertToString(color),
       "status": EnumToString.convertToString(status),
@@ -152,7 +187,7 @@ class FirestoreService {
     };
 
     try {
-      categoriesCollectionReference
+      await categoriesCollectionReference
           .doc(categoryDocId)
           .collection("items")
           .doc(itemDocId)
@@ -170,5 +205,47 @@ class FirestoreService {
         .collection("items")
         .doc(item.documentID)
         .delete();
+  }
+
+  static Future<void> deleteCategory({required String categoryDocId}) async {
+    await categoriesCollectionReference.doc(categoryDocId).delete();
+  }
+
+  static Future<void> updateCategory(
+      {required String newCategoryName, required Category category}) async {
+    category.name = newCategoryName;
+
+    categoriesCollectionReference
+        .doc(category.documentID)
+        .update(category.toMap());
+  }
+
+  static Future<void> updateCategoryAccess({required Category category}) async {
+    category.numbAccessed += 1;
+    category.lastAccessed = Timestamp.now();
+
+    await categoriesCollectionReference
+        .doc(category.documentID)
+        .update(category.toMap());
+  }
+
+  static Future<void> deleteUserData() async {
+    var snapshots = (await categoriesCollectionReference
+            .where("userID", isEqualTo: Database.user!.uid)
+            .get())
+        .docs;
+
+    for (var snapshot in snapshots) {
+      var categoryDocId = snapshot.id;
+
+      categoriesCollectionReference.doc(categoryDocId).delete();
+    }
+  }
+
+  static Future<Category> getCategoryById({required String categoryID}) async {
+    final map = (await categoriesCollectionReference.doc(categoryID).get())
+        .data() as Map<String, dynamic>;
+
+    return Category.fromMap(map, categoryID);
   }
 }

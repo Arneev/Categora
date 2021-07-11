@@ -1,6 +1,7 @@
 import 'package:categora/classes/category.class.dart';
 import 'package:categora/classes/item.class.dart';
 import 'package:categora/constants/route_name.dart';
+import 'package:categora/services/Firestore.dart';
 import 'package:categora/services/Router.helper.dart';
 import 'package:categora/ui/categories/categories.view.dart';
 import 'package:categora/ui/forgot_password/forgotPassword.view.dart';
@@ -79,5 +80,7 @@ void goToSettings(BuildContext context) {
 }
 
 void goToItems(BuildContext context, Category category) {
+  //Update Category last Accessed and numbAccessed
+  FirestoreService.updateCategoryAccess(category: category);
   Navigator.pushNamed(context, itemsRoute, arguments: category);
 }

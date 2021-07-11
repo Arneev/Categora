@@ -20,36 +20,42 @@ class RegistrationView extends StatelessWidget {
         RegistrationViewModel model,
         _,
       ) {
+        final size = MediaQuery.of(context).size;
         return MyScaffold(
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Heading("Registration"),
-              //Input Box for email
-              MyTextField(
-                controller: model.emailController,
-                hintText: "e-mail",
-              ),
+          isScrollView: false,
+          body: Container(
+            width: size.width,
+            height: size.height,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Heading("Registration"),
+                //Input Box for email
+                MyTextField(
+                  controller: model.emailController,
+                  hintText: "e-mail",
+                ),
 
-              //Input Box for password
-              MyTextField(
-                controller: model.passwordController,
-                hintText: "Password",
-                obsecureFlag: true,
-              ),
-              //Registration Button
-              MyButton(
-                  text: "Register",
-                  onTap: () async {
-                    await model.onRegister(context);
-                  }),
+                //Input Box for password
+                MyTextField(
+                  controller: model.passwordController,
+                  hintText: "Password",
+                  obsecureFlag: true,
+                ),
+                //Registration Button
+                MyButton(
+                    text: "Register",
+                    onTap: () async {
+                      await model.onRegister(context);
+                    }),
 
-              //Login
-              TextTap(
-                text: "Login",
-                onTap: () => model.goToLoginPage(context),
-              )
-            ],
+                //Login
+                TextTap(
+                  text: "Login",
+                  onTap: () => model.goToLoginPage(context),
+                )
+              ],
+            ),
           ),
         );
       },

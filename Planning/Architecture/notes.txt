@@ -30,7 +30,7 @@ Shows all the items
 
 	- Tap on item to cross it out or uncross it
 
-	- Hold on item to access more options, either rename, change color or change due date
+	- Hold on item to access more options, either rename, change color, change due date or delete
 
 		- New page or just PopUp Box? 
 		  => PopUp Box

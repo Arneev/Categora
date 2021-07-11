@@ -19,35 +19,41 @@ class LoginView extends StatelessWidget {
         LoginViewModel model,
         _,
       ) {
+        final size = MediaQuery.of(context).size;
         return MyScaffold(
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Heading("Login"),
-              MyTextField(
-                controller: model.emailController,
-                hintText: "e-mail",
-              ),
-              MyTextField(
-                controller: model.passwordController,
-                hintText: "Password",
-                obsecureFlag: true,
-              ),
-              MyButton(
-                text: "Login",
-                onTap: () async {
-                  await model.onLogin(context);
-                },
-              ),
-              TextTap(
-                text: "Forgot Password",
-                onTap: () => model.goForgotPasswordPage(context),
-              ),
-              TextTap(
-                text: "Register",
-                onTap: () => model.goRegister(context),
-              ),
-            ],
+          isScrollView: false,
+          body: Container(
+            width: size.width,
+            height: size.height,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Heading("Login"),
+                MyTextField(
+                  controller: model.emailController,
+                  hintText: "e-mail",
+                ),
+                MyTextField(
+                  controller: model.passwordController,
+                  hintText: "Password",
+                  obsecureFlag: true,
+                ),
+                MyButton(
+                  text: "Login",
+                  onTap: () async {
+                    await model.onLogin(context);
+                  },
+                ),
+                TextTap(
+                  text: "Forgot Password",
+                  onTap: () => model.goForgotPasswordPage(context),
+                ),
+                TextTap(
+                  text: "Register",
+                  onTap: () => model.goRegister(context),
+                ),
+              ],
+            ),
           ),
         );
       },
