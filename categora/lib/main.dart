@@ -1,3 +1,4 @@
+import 'package:categora/helpers/shiftRightFixer.dart';
 import 'package:categora/helpers/toast.dart';
 import 'package:categora/services/Database.dart';
 import 'package:categora/services/Router.dart';
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.teal,
       ),
-      home: MyHome(),
+      home: ShiftRightFixer(child: MyHome()),
     );
   }
 }

@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:categora/services/Router.dart';
 import 'package:categora/style.dart';
 import 'package:categora/ui/widgets/transparentLogo.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -17,7 +19,9 @@ class MyNavBar extends StatelessWidget {
         sigmaY: 1.5,
       ),
       child: Container(
-        width: size.width * 0.6,
+        width: (kIsWeb || Platform.isWindows)
+            ? size.width * 0.2
+            : size.width * 0.6,
         color: Colors.white10,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
