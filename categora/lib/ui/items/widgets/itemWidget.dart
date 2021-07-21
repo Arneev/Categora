@@ -39,7 +39,7 @@ class ItemWidget extends StatelessWidget {
         child: (dueTime.length == 0)
             ? Container(
                 padding: EdgeInsets.all(1),
-                child: Text(
+                child: SelectableText(
                   item.name,
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -58,7 +58,7 @@ class ItemWidget extends StatelessWidget {
                 children: [
                   Container(
                     padding: EdgeInsets.all(1),
-                    child: Text(
+                    child: SelectableText(
                       item.name,
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -74,7 +74,7 @@ class ItemWidget extends StatelessWidget {
                   ),
                   Container(
                     margin: EdgeInsets.only(top: 5),
-                    child: Text(
+                    child: SelectableText(
                       dueTime,
                       textAlign: TextAlign.right,
                       style: TextStyle(
